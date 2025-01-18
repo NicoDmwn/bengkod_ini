@@ -1,0 +1,47 @@
+Error tersebut terjadi karena dua alasan utama:
+
+1. **Undefined Array Key "id"**  
+   Variabel `$_POST['id']` tidak terdefinisi atau tidak dikirimkan dari form HTML. Pastikan form Anda memiliki input dengan atribut `name="id"` dan metode form menggunakan `POST`. Contohnya:  
+   ```html
+   <form method="POST" action="tambahkonsul.php">
+       <input type="text" name="id" placeholder="ID">
+       <input type="text" name="subject" placeholder="Subject">
+       <textarea name="pertanyaan" placeholder="Pertanyaan"></textarea>
+       <button type="submit">Submit</button>
+   </form>
+   ```
+
+2. **Foreign Key Constraint Error**  
+   Kesalahan ini terjadi karena kolom `id_dokter` di tabel `konsultasi` memiliki hubungan foreign key dengan kolom `id` di tabel `dokter`, tetapi nilai `id_dokter` yang Anda coba masukkan tidak cocok dengan nilai apa pun di tabel `dokter`. Solusinya:  
+   - Pastikan Anda mengisi kolom `id_dokter` dengan nilai yang sudah ada di tabel `dokter`. 
+   - Anda perlu menyesuaikan query untuk menyertakan `id_dokter`. Contoh:  
+     ```php
+     $id_dokter = $_POST['id_dokter']; // Pastikan ini ada di form
+     $query = "INSERT INTO konsultasi (id, id_dokter, subject, pertanyaan) 
+               VALUES ('$id', '$id_dokter', '$subject', '$pertanyaan')";
+     ```
+
+### Debugging dan Penyelesaian
+1. **Validasi Input**  
+   Tambahkan pengecekan apakah semua input sudah diterima sebelum menjalankan query:  
+   ```php
+   if (!isset($_POST['id']) || !isset($_POST['id_dokter']) || !isset($_POST['subject']) || !isset($_POST['pertanyaan'])) {
+       die("Error: Data tidak lengkap.");
+   }
+   ```
+
+2. **Periksa Relasi Foreign Key**  
+   Pastikan tabel `dokter` sudah memiliki data dengan `id` yang valid. Anda bisa memeriksanya dengan menjalankan query berikut di MySQL:  
+   ```sql
+   SELECT * FROM dokter;
+   ```
+
+3. **Tampilkan Pesan Error Lebih Informatif**  
+   Tambahkan `mysqli_error()` ke dalam log atau output untuk mempermudah debugging:  
+   ```php
+   if (!mysqli_query($mysqli, $query)) {
+       echo "Query Error: " . mysqli_error($mysqli);
+   }
+   ```
+
+Setelah langkah-langkah di atas dilakukan, error seharusnya bisa teratasi. Jika masih ada kendala, pastikan tabel dan struktur database Anda sesuai dengan kebutuhan aplikasi.
